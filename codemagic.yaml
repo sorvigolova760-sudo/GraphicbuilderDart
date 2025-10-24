@@ -15,109 +15,107 @@ workflows:
           
       - name: Replace with OUR graph app code
         script: |
-          # УДАЛЯЕМ шаблонный код и ВСТАВЛЯЕМ твой код построителя графиков
           cd graph_project
-          
-          echo '
-import '\''package:flutter/material.dart'\'';
-import '\''dart:math'\'';
+          cat > lib/main.dart << 'EOF'
+          import 'package:flutter/material.dart';
+          import 'dart:math';
 
-void main() {
-  runApp(const GraphApp());
-}
+          void main() {
+            runApp(const GraphApp());
+          }
 
-class GraphApp extends StatelessWidget {
-  const GraphApp({super.key});
+          class GraphApp extends StatelessWidget {
+            const GraphApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '\''Построитель графиков'\'',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
-      home: const GraphScreen(),
-    );
-  }
-}
+            @override
+            Widget build(BuildContext context) {
+              return MaterialApp(
+                title: 'Построитель графиков',
+                theme: ThemeData(
+                  primarySwatch: Colors.blue,
+                  useMaterial3: true,
+                ),
+                home: const GraphScreen(),
+              );
+            }
+          }
 
-class GraphScreen extends StatefulWidget {
-  const GraphScreen({super.key});
+          class GraphScreen extends StatefulWidget {
+            const GraphScreen({super.key});
 
-  @override
-  State<GraphScreen> createState() => _GraphScreenState();
-}
+            @override
+            State<GraphScreen> createState() => _GraphScreenState();
+          }
 
-class _GraphScreenState extends State<GraphScreen> {
-  final TextEditingController _functionController = TextEditingController(text: '\''x*x'\'');
-  final List<Map<String, dynamic>> _functions = [];
+          class _GraphScreenState extends State<GraphScreen> {
+            final TextEditingController _functionController = TextEditingController(text: 'x*x');
+            final List<Map<String, dynamic>> _functions = [];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('\''📈 Построитель графиков'\'')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _functionController,
-              decoration: const InputDecoration(
-                labelText: '\''Функция'\'',
-                hintText: '\''Например: x*x или sin(x)'\'',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _functions.add({
-                    '\''expression'\'': _functionController.text,
-                    '\''color'\'': Colors.primaries[_functions.length % Colors.primaries.length],
-                  });
-                });
-              },
-              child: const Text('\''Добавить график'\''),
-            ),
-            const SizedBox(height: 20),
-            if (_functions.isNotEmpty) ...[
-              const Text(
-                '\''Добавленные функции:'\'',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _functions.length,
-                  itemBuilder: (context, index) {
-                    final func = _functions[index];
-                    return ListTile(
-                      leading: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: func['\''color'\''],
-                          shape: BoxShape.circle,
+            @override
+            Widget build(BuildContext context) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('📈 Построитель графиков')),
+                body: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _functionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Функция',
+                          hintText: 'Например: x*x или sin(x)',
+                          border: OutlineInputBorder(),
                         ),
                       ),
-                      title: Text(
-                        func['\''expression'\''],
-                        style: const TextStyle(fontFamily: '\''monospace'\''),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _functions.add({
+                              'expression': _functionController.text,
+                              'color': Colors.primaries[_functions.length % Colors.primaries.length],
+                            });
+                          });
+                        },
+                        child: const Text('Добавить график'),
                       ),
-                    );
-                  },
+                      const SizedBox(height: 20),
+                      if (_functions.isNotEmpty) ...[
+                        const Text(
+                          'Добавленные функции:',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _functions.length,
+                            itemBuilder: (context, index) {
+                              final func = _functions[index];
+                              return ListTile(
+                                leading: Container(
+                                  width: 20,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    color: func['color'],
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                title: Text(
+                                  func['expression'],
+                                  style: const TextStyle(fontFamily: 'monospace'),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-' > lib/main.dart
+              );
+            }
+          }
+          EOF
 
       - name: Build Android APK
         script: |
