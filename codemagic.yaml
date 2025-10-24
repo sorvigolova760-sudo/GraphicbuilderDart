@@ -11,24 +11,118 @@ workflows:
           
       - name: Create proper Flutter project
         script: |
-          # Создаем правильную структуру Flutter
-          flutter create --org com.example --platforms android flutter_project
+          flutter create --org com.example --platforms android graph_project
           
-      - name: Copy our code to proper project
+      - name: Replace with OUR graph app code
         script: |
-          # Копируем наш код в созданный проект
-          cp pubspec.yaml flutter_project/
-          cp -r lib/ flutter_project/
+          # УДАЛЯЕМ шаблонный код и ВСТАВЛЯЕМ твой код построителя графиков
+          cd graph_project
           
-      - name: Install dependencies
-        script: |
-          cd flutter_project
-          flutter pub get
-          
+          echo '
+import '\''package:flutter/material.dart'\'';
+import '\''dart:math'\'';
+
+void main() {
+  runApp(const GraphApp());
+}
+
+class GraphApp extends StatelessWidget {
+  const GraphApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '\''Построитель графиков'\'',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const GraphScreen(),
+    );
+  }
+}
+
+class GraphScreen extends StatefulWidget {
+  const GraphScreen({super.key});
+
+  @override
+  State<GraphScreen> createState() => _GraphScreenState();
+}
+
+class _GraphScreenState extends State<GraphScreen> {
+  final TextEditingController _functionController = TextEditingController(text: '\''x*x'\'');
+  final List<Map<String, dynamic>> _functions = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('\''📈 Построитель графиков'\'')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _functionController,
+              decoration: const InputDecoration(
+                labelText: '\''Функция'\'',
+                hintText: '\''Например: x*x или sin(x)'\'',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _functions.add({
+                    '\''expression'\'': _functionController.text,
+                    '\''color'\'': Colors.primaries[_functions.length % Colors.primaries.length],
+                  });
+                });
+              },
+              child: const Text('\''Добавить график'\''),
+            ),
+            const SizedBox(height: 20),
+            if (_functions.isNotEmpty) ...[
+              const Text(
+                '\''Добавленные функции:'\'',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _functions.length,
+                  itemBuilder: (context, index) {
+                    final func = _functions[index];
+                    return ListTile(
+                      leading: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: func['\''color'\''],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      title: Text(
+                        func['\''expression'\''],
+                        style: const TextStyle(fontFamily: '\''monospace'\''),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+' > lib/main.dart
+
       - name: Build Android APK
         script: |
-          cd flutter_project
-          flutter build apk --release --target-platform android-arm,android-arm64
+          cd graph_project
+          flutter build apk --release
           
     artifacts:
-      - flutter_project/build/app/outputs/flutter-apk/**/*.apk
+      - graph_project/build/app/outputs/flutter-apk/**/*.apk
