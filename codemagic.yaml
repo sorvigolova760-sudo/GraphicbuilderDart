@@ -1,7 +1,7 @@
 workflows:
   graph-app-android:
     name: Build Graph App APK
-    max_build_duration: 60
+    max_build_duration: 120
     instance_type: mac_mini_m1
     
     scripts:
@@ -9,18 +9,26 @@ workflows:
         script: |
           flutter doctor -v
           
+      - name: Create proper Flutter project
+        script: |
+          # Создаем правильную структуру Flutter
+          flutter create --org com.example --platforms android flutter_project
+          
+      - name: Copy our code to proper project
+        script: |
+          # Копируем наш код в созданный проект
+          cp pubspec.yaml flutter_project/
+          cp -r lib/ flutter_project/
+          
       - name: Install dependencies
         script: |
+          cd flutter_project
           flutter pub get
           
       - name: Build Android APK
         script: |
+          cd flutter_project
           flutter build apk --release --target-platform android-arm,android-arm64
           
     artifacts:
-      - build/app/outputs/flutter-apk/**/*.apk
-      
-    publishing:
-      email:
-        recipients:
-          - your-email@example.com
+      - flutter_project/build/app/outputs/flutter-apk/**/*.apk
